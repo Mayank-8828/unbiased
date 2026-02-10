@@ -203,6 +203,12 @@ export default function VotePage() {
     if (!hasVoted) {
         return (
             <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                {poll.hostName && !isHost && (
+                    <div className="host-invite-banner">
+                        <span className="emoji">🤝</span>
+                        <span className="text"><strong>{poll.hostName}</strong> invited you to decide!</span>
+                    </div>
+                )}
                 <span className="badge badge-secondary mb-2">Voting</span>
 
                 <h2 className="mb-3">{poll.question}</h2>

@@ -5,11 +5,12 @@ class PollManager {
         this.polls = new Map();
     }
 
-    createPoll({ question, type, options, revealTrigger, hostId, sliderConfig, questionImage, optionsImages }) {
+    createPoll({ question, type, options, revealTrigger, hostId, hostName, sliderConfig, questionImage, optionsImages }) {
         const pollId = crypto.randomBytes(3).toString('hex'); // 6 char random ID
         const poll = {
             id: pollId,
             hostId,
+            hostName, // Name of the creator
             question,
             questionImage, // Base64 image for the question
             type, // 'multiple', 'slider', 'text'

@@ -642,6 +642,39 @@ label {
     border: 1px solid var(--border);
 }
 
+.host-invite-banner {
+    background: var(--primary-glow);
+    border: 1px solid var(--primary);
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideInDown 0.4s ease-out;
+}
+
+.host-invite-banner .emoji {
+    font-size: 1.2rem;
+}
+
+.host-invite-banner .text {
+    font-size: 0.9rem;
+    color: var(--primary);
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Image Support */
 .image-upload-wrapper {
     margin-bottom: 1rem;

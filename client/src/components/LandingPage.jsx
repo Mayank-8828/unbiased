@@ -120,6 +120,7 @@ export default function LandingPage() {
         socket.emit('create_poll', {
             question,
             questionImage,
+            hostName: userName,
             type: questionType,
             options: validOptions,
             optionsImages: filteredOptionsImages,
