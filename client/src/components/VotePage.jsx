@@ -14,6 +14,7 @@ export default function VotePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [vote, setVote] = useState('');
+    const [voterName, setVoterName] = useState(localStorage.getItem('unbiased_name') || '');
     const [hasVoted, setHasVoted] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -39,8 +40,9 @@ export default function VotePage() {
     }, [pollId]);
 
     const submitVote = () => {
-        if (!vote) return;
-        socket.emit('submit_vote', { pollId, vote: { answer: vote } });
+        if (!vote || !voterName.trim()) return;
+        localStorage.setItem('unbiased_name', voterName);
+        socket.emit('submit_vote', { pollId, vote: { answer: vote, voterName } });
         setHasVoted(true);
     };
 
@@ -120,6 +122,16 @@ export default function VotePage() {
                 <div className="divider" />
 
                 {/* Host also votes */}
+                <div className="mb-2">
+                    <label style={{ fontSize: '0.85rem' }}>Your name:</label>
+                    <input
+                        type="text"
+                        value={voterName}
+                        onChange={e => setVoterName(e.target.value)}
+                        placeholder="Who are you?"
+                        style={{ padding: '8px 12px' }}
+                    />
+                </div>
                 <p className="text-dim mb-2" style={{ fontSize: '0.85rem' }}>Your vote:</p>
 
                 {poll.type === 'multiple' && poll.options.map((opt, i) => (
@@ -195,6 +207,17 @@ export default function VotePage() {
 
                 <h2 className="mb-3">{poll.question}</h2>
                 {poll.questionImage && <img src={poll.questionImage} alt="Question" className="question-image" />}
+
+                <div className="mb-3">
+                    <label>Your Name</label>
+                    <input
+                        type="text"
+                        value={voterName}
+                        onChange={e => setVoterName(e.target.value)}
+                        placeholder="Enter your name"
+                        autoFocus={!voterName}
+                    />
+                </div>
 
                 {poll.type === 'multiple' && poll.options.map((opt, i) => (
                     <button

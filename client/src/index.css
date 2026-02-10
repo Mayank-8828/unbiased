@@ -498,6 +498,18 @@ label {
     gap: 8px;
 }
 
+.gap-xs {
+    gap: 4px;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
 .w-full {
     width: 100%;
 }
@@ -617,6 +629,17 @@ label {
 
 [data-theme="light"] .background-container {
     opacity: 0.7;
+}
+
+.badge-secondary {
+    background: var(--secondary-glow);
+    color: var(--secondary);
+}
+
+.badge-dim {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
 }
 
 /* Image Support */

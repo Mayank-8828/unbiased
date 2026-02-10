@@ -43,6 +43,7 @@ export default function LandingPage() {
     const navigate = useNavigate();
     const [step, setStep] = useState(-1); // -1 = intro/how-it-works
     const [reaction, setReaction] = useState('');
+    const [userName, setUserName] = useState('');
 
     // Form state
     const [mode, setMode] = useState('');
@@ -127,7 +128,10 @@ export default function LandingPage() {
             sliderConfig: questionType === 'slider' ? { min: Number(sliderMin), max: Number(sliderMax), step: Number(sliderStep) } : undefined,
         }, (res) => {
             setCreating(false);
-            if (res.success) navigate(`/vote/${res.pollId}?host=true`);
+            if (res.success) {
+                localStorage.setItem('unbiased_name', userName);
+                navigate(`/vote/${res.pollId}?host=true`);
+            }
         });
     };
 
@@ -169,7 +173,18 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <button className="btn-primary mt-3" onClick={() => setStep(0)}>
+                        <div className="mt-3">
+                            <label>Your Name</label>
+                            <input
+                                type="text"
+                                placeholder="Enter your name"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                style={{ marginBottom: 0 }}
+                            />
+                        </div>
+
+                        <button className="btn-primary mt-3" onClick={() => setStep(0)} disabled={!userName.trim()}>
                             Let's decide! →
                         </button>
                     </motion.div>
