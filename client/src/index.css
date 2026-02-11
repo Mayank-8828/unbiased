@@ -8,8 +8,8 @@
     --card: #1a1a1a;
     --border: #2a2a2a;
     --text: #ffffff;
-    --text-dim: #888888;
-    --text-muted: #555555;
+    --text-dim: #b0b0b0;
+    --text-muted: #888888;
     --primary: #CCFF00;
     --primary-glow: rgba(204, 255, 0, 0.15);
     --secondary: #a855f7;
@@ -657,9 +657,10 @@ label {
 
 /* Ensure inputs stand out */
 .card {
-    backdrop-filter: blur(12px);
-    background: rgba(26, 26, 26, 0.85);
-    /* Slightly translucent dark */
+    backdrop-filter: blur(16px);
+    background: rgba(20, 20, 20, 0.95);
+    /* Higher contrast background */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 [data-theme="light"] .card {

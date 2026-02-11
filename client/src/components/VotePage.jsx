@@ -16,16 +16,16 @@ export default function VotePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [vote, setVote] = useState('');
-    const [voterName, setVoterName] = useState(localStorage.getItem('unbiased_name') || '');
+    const [voterName, setVoterName] = useState(localStorage.getItem('secretboom_name') || '');
     const [hasVoted, setHasVoted] = useState(false);
     const [copied, setCopied] = useState(false);
 
     // Persistent Voter ID
     const [voterId] = useState(() => {
-        let id = localStorage.getItem('unbiased_voterId');
+        let id = localStorage.getItem('secretboom_voterId');
         if (!id) {
             id = Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('unbiased_voterId', id);
+            localStorage.setItem('secretboom_voterId', id);
         }
         return id;
     });
@@ -82,7 +82,7 @@ export default function VotePage() {
     const submitVote = () => {
         if (!vote || !voterName.trim()) return;
         soundManager.play('pop');
-        localStorage.setItem('unbiased_name', voterName);
+        localStorage.setItem('secretboom_name', voterName);
         // Include voterId in the vote payload
         socket.emit('submit_vote', { pollId, vote: { answer: vote, voterName, voterId } });
         setHasVoted(true);

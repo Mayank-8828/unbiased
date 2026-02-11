@@ -134,7 +134,7 @@ export default function LandingPage() {
         }, (res) => {
             setCreating(false);
             if (res.success) {
-                localStorage.setItem('unbiased_name', userName);
+                localStorage.setItem('secretboom_name', userName);
                 navigate(`/vote/${res.pollId}?host=true`);
             }
         });
@@ -155,7 +155,7 @@ export default function LandingPage() {
                     <motion.div key="intro" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }}>
                         <div className="text-center mb-3">
                             <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🤫</div>
-                            <h1 style={{ fontSize: '1.8rem' }}>Unbiased</h1>
+                            <h1 style={{ fontSize: '1.8rem' }}>SecretBoom</h1>
                             <p className="text-dim mt-1">Group decisions without the bias</p>
                         </div>
 
