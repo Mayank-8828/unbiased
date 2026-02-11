@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function ResultView({ poll }) {
+export default function ResultView({ poll, onPlayAgain }) {
     const [winner, setWinner] = useState(null);
     const [spinning, setSpinning] = useState(false);
 
@@ -10,6 +10,10 @@ export default function ResultView({ poll }) {
     let total = 0;
     let max = 0;
     let winners = [];
+
+    if (!poll || !poll.votes) {
+        return <div className="text-center p-3">No results data available</div>;
+    }
 
     if (poll.type === 'multiple') {
         poll.votes.forEach(v => {
@@ -79,6 +83,15 @@ export default function ResultView({ poll }) {
                                         style={{ background: isWinner ? 'var(--primary)' : 'var(--secondary)' }}
                                     />
                                 </div>
+                                <div className="mt-1 flex-row gap-xs flex-wrap">
+                                    {poll.votes
+                                        .filter(v => v.answer === opt)
+                                        .map((v, idx) => (
+                                            <span key={idx} className="badge badge-dim" style={{ fontSize: '0.65rem', textTransform: 'none' }}>
+                                                {v.voterName || 'Anonymous'}
+                                            </span>
+                                        ))}
+                                </div>
                             </motion.div>
                         );
                     })}
@@ -92,6 +105,13 @@ export default function ResultView({ poll }) {
                         {winners[0]}
                     </motion.div>
                     <p className="text-dim">Average of {total} response{total !== 1 ? 's' : ''}</p>
+                    <div className="flex-row gap-xs flex-wrap justify-center mt-2">
+                        {poll.votes.map((v, idx) => (
+                            <span key={idx} className="badge badge-dim" style={{ fontSize: '0.65rem', textTransform: 'none' }}>
+                                {v.voterName || 'Anon'}: {v.answer}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -106,6 +126,7 @@ export default function ResultView({ poll }) {
                             transition={{ delay: i * 0.1 }}
                             style={{ background: 'var(--surface)', padding: '12px 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
                         >
+                            <div style={{ fontSize: '0.75rem', color: 'var(--primary)', marginBottom: '4px', fontWeight: 700 }}>{v.voterName || 'Anonymous'}</div>
                             "{v.answer}"
                         </motion.div>
                     ))}
@@ -130,6 +151,26 @@ export default function ResultView({ poll }) {
                     )}
                 </div>
             )}
+
+            {onPlayAgain && (
+                <button
+                    className="btn-secondary mt-3 mb-2"
+                    onClick={onPlayAgain}
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', justifyContent: 'center' }}
+                >
+                    🔄 Play Again / Re-roll
+                </button>
+            )}
+
+            <a
+                href="https://buymeacoffee.com/mayankkariya"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bmc-button"
+            >
+                <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee" className="bmc-icon" style={{ width: 'auto', height: '24px' }} />
+                <span>Buy me a coffee</span>
+            </a>
         </div>
     );
 }

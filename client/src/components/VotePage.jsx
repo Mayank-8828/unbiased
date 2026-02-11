@@ -3,6 +3,8 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import socket from '../socket';
 import ResultView from './ResultView';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
+import soundManager from '../utils/SoundManager';
 
 export default function VotePage() {
     const { pollId } = useParams();
@@ -14,20 +16,59 @@ export default function VotePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [vote, setVote] = useState('');
+    const [voterName, setVoterName] = useState(localStorage.getItem('secretboom_name') || '');
     const [hasVoted, setHasVoted] = useState(false);
     const [copied, setCopied] = useState(false);
 
+    // Persistent Voter ID
+    const [voterId] = useState(() => {
+        let id = localStorage.getItem('secretboom_voterId');
+        if (!id) {
+            id = Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('secretboom_voterId', id);
+        }
+        return id;
+    });
+
     useEffect(() => {
-        socket.emit('join_poll', pollId, (response) => {
+        // Send voterId when joining to check if we already voted
+        socket.emit('join_poll', { pollId, voterId }, (response) => {
             if (response.success) {
                 setPoll(response.poll);
+                // Check if I already voted in this poll
+                const myVote = response.poll.votes.find(v => v.voterId === voterId);
+                if (myVote) {
+                    setVote(myVote.answer);
+                    setVoterName(myVote.voterName); // Restore name too
+                    setHasVoted(true);
+                }
             } else {
                 setError(response.error);
             }
             setLoading(false);
         });
 
-        socket.on('poll_updated', (updatedPoll) => setPoll(updatedPoll));
+        socket.on('poll_updated', (updatedPoll) => {
+            setPoll(updatedPoll);
+            // Play sound if vote count increased (simple check)
+            if (poll && updatedPoll.voteCount > poll.voteCount) {
+                soundManager.play('ding');
+            }
+            // Check for reveal
+            if (poll && poll.status !== 'revealed' && updatedPoll.status === 'revealed') {
+                soundManager.play('tada');
+                soundManager.play('tada');
+                try {
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                } catch (e) {
+                    console.error('Confetti error:', e);
+                }
+            }
+        });
         socket.on('poll_ended', () => {
             navigate('/');
         });
@@ -39,8 +80,11 @@ export default function VotePage() {
     }, [pollId]);
 
     const submitVote = () => {
-        if (!vote) return;
-        socket.emit('submit_vote', { pollId, vote: { answer: vote } });
+        if (!vote || !voterName.trim()) return;
+        soundManager.play('pop');
+        localStorage.setItem('secretboom_name', voterName);
+        // Include voterId in the vote payload
+        socket.emit('submit_vote', { pollId, vote: { answer: vote, voterName, voterId } });
         setHasVoted(true);
     };
 
@@ -84,10 +128,10 @@ export default function VotePage() {
     if (poll.status === 'revealed') {
         return (
             <motion.div className="card" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                <ResultView poll={poll} />
+                <ResultView poll={poll} onPlayAgain={() => socket.emit('play_again', pollId, (newId) => navigate(`/vote/${newId}?host=true`))} />
                 <div className="divider" />
                 <button className="btn-primary" onClick={() => navigate('/')}>
-                    🔄 New Question
+                    🏠 Home
                 </button>
                 {isHost && (
                     <button className="btn-ghost w-full mt-1 text-center" onClick={endPoll} style={{ justifyContent: 'center', color: 'var(--danger)' }}>
@@ -108,9 +152,11 @@ export default function VotePage() {
                 {poll.questionImage && <img src={poll.questionImage} alt="Question" className="question-image" />}
                 <p className="text-dim mb-3">Share this code with your group:</p>
 
-                <div className="poll-code" onClick={copyLink}>
-                    <div className="code">{pollId.toUpperCase()}</div>
-                    <div className="hint">{copied ? '✅ Link copied!' : 'Tap to copy link'}</div>
+                <div className="poll-code-container">
+                    <div className="poll-code" onClick={copyLink} style={{ margin: '0 auto' }}>
+                        <div className="code">{pollId.toUpperCase()}</div>
+                        <div className="hint">{copied ? '✅ Link copied!' : 'Tap to copy link'}</div>
+                    </div>
                 </div>
 
                 <p className="text-dim text-center mb-3" style={{ fontSize: '0.85rem' }}>
@@ -120,6 +166,16 @@ export default function VotePage() {
                 <div className="divider" />
 
                 {/* Host also votes */}
+                <div className="mb-2">
+                    <label style={{ fontSize: '0.85rem' }}>Your name:</label>
+                    <input
+                        type="text"
+                        value={voterName}
+                        onChange={e => setVoterName(e.target.value)}
+                        placeholder="Who are you?"
+                        style={{ padding: '8px 12px' }}
+                    />
+                </div>
                 <p className="text-dim mb-2" style={{ fontSize: '0.85rem' }}>Your vote:</p>
 
                 {poll.type === 'multiple' && poll.options.map((opt, i) => (
@@ -191,10 +247,27 @@ export default function VotePage() {
     if (!hasVoted) {
         return (
             <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                {poll.hostName && !isHost && (
+                    <div className="host-invite-banner">
+                        <span className="emoji">🤝</span>
+                        <span className="text"><strong>{poll.hostName}</strong> invited you to decide!</span>
+                    </div>
+                )}
                 <span className="badge badge-secondary mb-2">Voting</span>
 
                 <h2 className="mb-3">{poll.question}</h2>
                 {poll.questionImage && <img src={poll.questionImage} alt="Question" className="question-image" />}
+
+                <div className="mb-3">
+                    <label>Your Name</label>
+                    <input
+                        type="text"
+                        value={voterName}
+                        onChange={e => setVoterName(e.target.value)}
+                        placeholder="Enter your name"
+                        autoFocus={!voterName}
+                    />
+                </div>
 
                 {poll.type === 'multiple' && poll.options.map((opt, i) => (
                     <button

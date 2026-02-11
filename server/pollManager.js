@@ -5,11 +5,12 @@ class PollManager {
         this.polls = new Map();
     }
 
-    createPoll({ question, type, options, revealTrigger, hostId, sliderConfig, questionImage, optionsImages }) {
+    createPoll({ question, type, options, revealTrigger, hostId, hostName, sliderConfig, questionImage, optionsImages }) {
         const pollId = crypto.randomBytes(3).toString('hex'); // 6 char random ID
         const poll = {
             id: pollId,
             hostId,
+            hostName, // Name of the creator
             question,
             questionImage, // Base64 image for the question
             type, // 'multiple', 'slider', 'text'
@@ -33,12 +34,14 @@ class PollManager {
         const poll = this.getPoll(pollId);
         if (!poll || poll.status === 'revealed') return null;
 
-        // Check if user already voted (by socket ID or temp session ID)
+        // Check if user already voted (by persistent voterId)
         const existingVoteIndex = poll.votes.findIndex(v => v.voterId === vote.voterId);
+
         if (existingVoteIndex !== -1) {
-            // Update vote
+            // Update existing vote
             poll.votes[existingVoteIndex] = vote;
         } else {
+            // New vote
             poll.votes.push(vote);
         }
 
@@ -65,6 +68,22 @@ class PollManager {
 
     removePoll(pollId) {
         this.polls.delete(pollId);
+    }
+
+    copyPoll(pollId) {
+        const original = this.getPoll(pollId);
+        if (!original) return null;
+
+        const newId = crypto.randomBytes(3).toString('hex');
+        const newPoll = {
+            ...original,
+            id: newId,
+            votes: [],
+            status: 'waiting',
+            createdAt: Date.now()
+        };
+        this.polls.set(newId, newPoll);
+        return newId;
     }
 }
 

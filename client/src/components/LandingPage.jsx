@@ -43,6 +43,7 @@ export default function LandingPage() {
     const navigate = useNavigate();
     const [step, setStep] = useState(-1); // -1 = intro/how-it-works
     const [reaction, setReaction] = useState('');
+    const [userName, setUserName] = useState('');
 
     // Form state
     const [mode, setMode] = useState('');
@@ -56,6 +57,7 @@ export default function LandingPage() {
     const [sliderMin, setSliderMin] = useState(1);
     const [sliderMax, setSliderMax] = useState(10);
     const [sliderStep, setSliderStep] = useState(1);
+    const [timer, setTimer] = useState(0); // 0 = no timer
     const [creating, setCreating] = useState(false);
 
     const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
@@ -119,15 +121,22 @@ export default function LandingPage() {
         socket.emit('create_poll', {
             question,
             questionImage,
+            hostName: userName,
             type: questionType,
             options: validOptions,
             optionsImages: filteredOptionsImages,
             revealTrigger,
             mode,
+            revealTrigger,
+            mode,
+            timer, // Send timer to server
             sliderConfig: questionType === 'slider' ? { min: Number(sliderMin), max: Number(sliderMax), step: Number(sliderStep) } : undefined,
         }, (res) => {
             setCreating(false);
-            if (res.success) navigate(`/vote/${res.pollId}?host=true`);
+            if (res.success) {
+                localStorage.setItem('secretboom_name', userName);
+                navigate(`/vote/${res.pollId}?host=true`);
+            }
         });
     };
 
@@ -146,7 +155,7 @@ export default function LandingPage() {
                     <motion.div key="intro" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }}>
                         <div className="text-center mb-3">
                             <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🤫</div>
-                            <h1 style={{ fontSize: '1.8rem' }}>Unbiased</h1>
+                            <h1 style={{ fontSize: '1.8rem' }}>SecretBoom</h1>
                             <p className="text-dim mt-1">Group decisions without the bias</p>
                         </div>
 
@@ -169,7 +178,18 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <button className="btn-primary mt-3" onClick={() => setStep(0)}>
+                        <div className="mt-3">
+                            <label>Your Name</label>
+                            <input
+                                type="text"
+                                placeholder="Enter your name"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                style={{ marginBottom: 0 }}
+                            />
+                        </div>
+
+                        <button className="btn-primary mt-3" onClick={() => setStep(0)} disabled={!userName.trim()}>
                             Let's decide! →
                         </button>
                     </motion.div>
