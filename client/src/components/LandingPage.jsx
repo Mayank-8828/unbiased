@@ -156,7 +156,7 @@ export default function LandingPage() {
                         <div className="text-center mb-3">
                             <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🤫</div>
                             <h1 style={{ fontSize: '1.8rem' }}>SecretBoom</h1>
-                            <p className="text-dim mt-1">Group decisions without the bias</p>
+                            <p className="text-dim mt-1">Decisions without the bias</p>
                         </div>
 
                         <div className="how-it-works">
